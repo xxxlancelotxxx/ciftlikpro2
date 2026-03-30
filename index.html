@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -467,7 +468,6 @@ tr:hover td{background:var(--g50)}
           <img id="aPhotoP" style="display:none;width:90px;height:70px;object-fit:cover;border-radius:7px;margin-top:6px;border:1px solid var(--border)">
         </div>
       </div>
-      
       <div id="at-parents" style="display:none">
         <div class="frow">
           <div class="fg"><label class="fl">Anne Küpe</label><input class="fc" id="a-mom" list="kupeList"></div>
@@ -477,15 +477,7 @@ tr:hover td{background:var(--g50)}
           <div class="fg"><label class="fl">Alış Fiyatı (₺)</label><input type="number" class="fc" id="a-price"></div>
           <div class="fg"><label class="fl">Pasaport No</label><input class="fc" id="a-passport"></div>
         </div>
-        
-        <div id="a-family-tree" style="margin-top:10px; padding:10px; background:var(--b50); border:1px solid var(--b100); border-radius:7px; display:none;">
-        </div>
-        
-        <div class="alert al-i mt8" style="font-size:11px;">
-          💡 <strong>Bilgi:</strong> Sistem, aynı Anne veya Baba küpesine sahip hayvanları otomatik olarak <strong>Kardeş</strong>; Anne/Baba olarak bu hayvanın seçildiği kuzu/koçları ise otomatik olarak <strong>Yavru</strong> kabul eder. Manuel eklemenize gerek yoktur.
-        </div>
       </div>
-
       <div id="at-health" style="display:none">
         <div class="frow">
           <div class="fg"><label class="fl">Alerjiler</label><input class="fc" id="a-allergy"></div>
@@ -899,6 +891,7 @@ function renderDashboard(){
     '<div class="stat coral"><div class="stat-icon">🤰</div><div class="stat-val">'+gebe+'</div><div class="stat-label">Gebe</div></div>'+
     '<div class="stat red"><div class="stat-icon">🏥</div><div class="stat-val">'+hasta+'</div><div class="stat-label">Tedavide</div></div>';
 
+  // Irk Dağılımı
   var breeds = {};
   act.forEach(function(a){
     var b = a.breed ? a.breed.trim() : 'Belirtilmemiş';
@@ -998,8 +991,6 @@ function openAnimalModal(prefill){
   sTab('at','basic',document.querySelector('#modalAnimal .tab'));
   document.getElementById('modalAnimal').classList.add('open');
 }
-
-// BURA: Düzenleme Ekranında Soy Ağacı Özeti Doldurulur
 function editAnimal(id){
   var a=C.animals.find(function(x){return x.id===id;}); if(!a)return;
   editAnimalId=id;
@@ -1007,34 +998,14 @@ function editAnimal(id){
   ['kupe','name','type','gender','dob','dobtime','breed','color','weight','status','rfid','bcs','mom','dad','origin','acquired','price','passport','allergy','chronic','lastvet','vetname'].forEach(function(f){ sv('a-'+f,a[f]); });
   sv('a-notes',a.notes);
   if(a.photo){var p=document.getElementById('aPhotoP');p.src=a.photo;p.style.display='block';}
-
-  // Otomatik Kardeş ve Yavru Hesaplama ve Gösterme
-  var ch = C.animals.filter(function(x){return x.mom===a.kupe||x.dad===a.kupe;});
-  var siblings = C.animals.filter(function(x){return x.id !== a.id && ((a.mom && x.mom === a.mom) || (a.dad && x.dad === a.dad));});
-
-  var famDiv = document.getElementById('a-family-tree');
-  if(ch.length || siblings.length) {
-    var html = '<div style="font-weight:700;font-size:12px;color:var(--b800);margin-bottom:6px">🧬 Kayıtlı Soy Bağlantıları</div>';
-    if(ch.length) html += '<div style="font-size:11px;margin-bottom:4px;color:var(--b800)"><strong>Yavruları:</strong> ' + ch.map(function(c){return c.kupe;}).join(', ') + '</div>';
-    if(siblings.length) html += '<div style="font-size:11px;color:var(--b800)"><strong>Kardeşleri:</strong> ' + siblings.map(function(s){return s.kupe;}).join(', ') + '</div>';
-    famDiv.innerHTML = html;
-    famDiv.style.display = 'block';
-  } else {
-    famDiv.style.display = 'none';
-  }
-
   sTab('at','basic',document.querySelector('#modalAnimal .tab'));
   document.getElementById('modalAnimal').classList.add('open');
 }
-
 function clearAnimalForm(){
   ['kupe','name','breed','color','weight','rfid','mom','dad','origin','acquired','price','passport','allergy','chronic','vetname','notes'].forEach(function(f){sv('a-'+f,'');});
   sv('a-type','koyun');sv('a-gender','disi');sv('a-status','aktif');sv('a-bcs','');sv('a-dob','');sv('a-dobtime','');sv('a-lastvet','');
   document.getElementById('aPhotoP').style.display='none';document.getElementById('aPhotoP').src='';document.getElementById('aPhotoS').textContent='';
-  var famDiv = document.getElementById('a-family-tree');
-  if(famDiv) { famDiv.innerHTML=''; famDiv.style.display='none'; }
 }
-
 async function saveAnimal(){
   var kupe=gv('a-kupe'); if(!kupe){notify('Küpe zorunludur!','err');return;}
   if(C.animals.find(function(a){return a.kupe===kupe&&a.id!==editAnimalId;})){notify('Bu küpe zaten kayıtlı!','err');return;}
@@ -1079,6 +1050,7 @@ function openDetail(id){
   var dad=C.animals.find(function(x){return x.kupe===a.dad;});
   var ch=C.animals.filter(function(x){return x.mom===a.kupe||x.dad===a.kupe;});
   
+  // Soy Ağacı - Kardeşler mantığı
   var siblings = C.animals.filter(function(x){
     return x.id !== a.id && ((a.mom && x.mom === a.mom) || (a.dad && x.dad === a.dad));
   });
@@ -1164,16 +1136,24 @@ function openDetail(id){
   document.getElementById('modalDetail').classList.add('open');
 }
 
+// ===== RESMI KÜPE ATA =====
 async function assignRealKupe(id){
   var nk = prompt('Hayvanın resmi küpe numarasını giriniz:');
   if(!nk || nk.trim()==='') return;
   nk = nk.trim();
+  
   if(C.animals.find(function(a){return a.kupe===nk;})){ notify('Bu küpe zaten sistemde var!','err'); return; }
+  
   var r = await sb.from('animals').update({kupe: nk}).eq('id', id);
   if(r.error){ notify('Hata: '+r.error.message,'err'); return; }
+  
   var a = C.animals.find(function(x){return x.id === id;});
   if(a) a.kupe = nk;
-  updateKupeLists(); closeM('modalDetail'); renderAnimals(); renderDashboard();
+  
+  updateKupeLists();
+  closeM('modalDetail');
+  renderAnimals();
+  renderDashboard();
   notify('Küpe başarıyla resmi numarayla güncellendi.');
 }
 
@@ -1277,7 +1257,7 @@ async function delDisease(id){
   C.diseases=C.diseases.filter(function(x){return x.id!==id;});renderHealth();
 }
 
-// ===== BIRTHS =====
+// ===== BIRTHS & TMP KUPE =====
 function buildLambFields(){
   var count=parseInt(gv('b-count'));
   document.getElementById('lambFields').innerHTML=Array.from({length:count},function(_,i){
@@ -1296,10 +1276,12 @@ async function saveBirth(){
   var momKupe=gv('b-mom'),date=gv('b-date');
   if(!momKupe||!date){notify('Anne küpe ve tarih zorunludur!','err');return;}
   var count=parseInt(gv('b-count')),dadKupe=gv('b-dad'),lambs=[];
-  
   for(var i=1;i<=count;i++){
     var lk=gv('l'+i+'-kupe');
-    if(!lk){ lk = 'TMP-' + momKupe + '-' + Math.floor(Math.random()*10000); }
+    if(!lk){
+      lk = 'TMP-' + momKupe + '-' + Math.floor(Math.random()*10000);
+    }
+    
     var lg=document.getElementById('l'+i+'-gender').value,lw=gv('l'+i+'-weight'),ln=gv('l'+i+'-name');
     lambs.push({kupe:lk,gender:lg,weight:lw,name:ln});
     
@@ -1598,42 +1580,72 @@ function stopAICam(){if(aiStream){aiStream.getTracks().forEach(function(t){t.sto
 
 async function runAI() {
   if (!aiPhotoData) { notify('Önce fotoğraf ekleyin!', 'err'); return; }
+  
+  // 1. Tarayıcı hafızasından API anahtarını okumaya çalış
+  var apiKey = localStorage.getItem('gemini_api_key');
+  
+  // 2. Eğer anahtar yoksa (veya ilk girişse), kullanıcıdan girmesini iste
+  if (!apiKey) {
+      apiKey = prompt("🤖 Lütfen Google Gemini API Anahtarınızı girin:\n\n(Bu anahtar sadece sizin cihazınıza kaydedilecek ve GitHub'da görünmeyecektir. aistudio.google.com adresinden ücretsiz alabilirsiniz.)");
+      
+      // Kullanıcı iptal ederse veya boş geçerse işlemi durdur
+      if (!apiKey || apiKey.trim() === '') {
+          notify('API Anahtarı olmadan analiz yapılamaz!', 'err');
+          return;
+      }
+      // Girilen anahtarı tarayıcıya kaydet
+      localStorage.setItem('gemini_api_key', apiKey.trim());
+      apiKey = apiKey.trim();
+  }
+
   var kupe = gv('ai-kupe');
   var animal = C.animals.find(function(x) { return x.kupe === kupe; });
   var symptoms = gv('ai-symptoms');
-  
-  document.getElementById('aiResult').innerHTML = '<div class="alert al-i mt8">🤖 Gemini analiz yapıyor...</div>';
-  
+
+  document.getElementById('aiResult').innerHTML = '<div class="alert al-i mt8">🤖 Gemini analiz yapıyor... Lütfen bekleyin.</div>';
+
   try {
     var base64 = aiPhotoData.split(',')[1];
     var mType = aiPhotoData.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
-    
-    var prompt = 'Sen uzman bir veterinersin. Bu koyun/kuzu fotoğrafını analiz et.' + 
-                 (animal ? '\nHayvan: Küpe:' + kupe + ', Tür:' + animal.type + ', Irk:' + (animal.breed || 'bilinmiyor') : '') + 
-                 (symptoms ? '\nBelirtiler: ' + symptoms : '') + 
-                 '\n\nDeğerlendir:\n1. Genel görünüm ve BCS skoru (1-5)\n2. Gözlemlenen sağlık sorunları\n3. Acil müdahale gerekiyor mu?\n4. Önerilen bakım/tedavi\n5. Veterinere gitme gerekliliği\n\nTürkçe, kısa ve net yanıt ver.';
 
-    // LÜTFEN GOOGLE AI STUDIO'DAN ALDIĞIN YENİ API ANAHTARINI BURAYA YAPIŞTIR
-    var apiKey = 'AIzaSyAi45ewHj2HgmvqGl5DjLVy1fXbIYYzSVw'; 
+    var promptText = 'Sen uzman bir veterinersin. Bu koyun/kuzu fotoğrafını analiz et.' +
+                 (animal ? '\nHayvan: Küpe:' + kupe + ', Tür:' + animal.type + ', Irk:' + (animal.breed || 'bilinmiyor') : '') +
+                 (symptoms ? '\nBelirtiler: ' + symptoms : '') +
+                 '\n\nDeğerlendir:\n1. Genel görünüm ve Vücut Kondisyon Skoru (Tahmini BCS 1-5)\n2. Gözlemlenen sağlık sorunları\n3. Acil müdahale gerekiyor mu?\n4. Önerilen bakım/tedavi\n5. Veterinere gitme gerekliliği\n\nTürkçe, kısa ve net yanıt ver.';
+
+    // Kodun içinde anahtar yok, değişkenden geliyor.
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
 
     var res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mType, data: base64 } }] }]
+        contents: [{
+          parts: [
+            { text: promptText },
+            { inlineData: { mimeType: mType, data: base64 } }
+          ]
+        }]
       })
     });
 
     var data = await res.json();
-    if (data.error) throw new Error(data.error.message);
+    
+    // 3. Eğer API anahtarı yanlışsa, hatalıysa veya süresi dolmuşsa:
+    if (!res.ok) {
+        // Hafızadaki bozuk anahtarı sil ki bir sonraki denemede tekrar sorsun
+        localStorage.removeItem('gemini_api_key');
+        throw new Error(data.error ? data.error.message : 'API bağlantı hatası.');
+    }
 
     var text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) || 'Analiz alınamadı.';
 
-    document.getElementById('aiResult').innerHTML = '<div class="ai-result"><div style="font-weight:700;font-size:12px;color:var(--g800);margin-bottom:6px">🤖 Gemini Veteriner Analizi</div><div style="font-size:12px;line-height:1.7;white-space:pre-wrap">' + text + '</div><div style="font-size:10px;color:var(--g600);margin-top:7px;padding-top:6px;border-top:1px solid var(--g200)">⚠️ Yardımcı bilgi amaçlıdır. Kesin teşhis için veterinere başvurun.</div></div>';
-    
+    document.getElementById('aiResult').innerHTML = '<div class="ai-result"><div style="font-weight:700;font-size:14px;color:var(--g800);margin-bottom:6px">🤖 Gemini 2.5 Veteriner Analizi</div><div style="font-size:12px;line-height:1.7;white-space:pre-wrap">' + text + '</div><div style="font-size:10px;color:var(--g600);margin-top:7px;padding-top:6px;border-top:1px solid var(--g200)">⚠️ Yardımcı bilgi amaçlıdır. Kesin teşhis için veterinere başvurun.</div></div>';
+
   } catch (e) {
-    document.getElementById('aiResult').innerHTML = '<div class="alert al-d mt8">❌ AI hatası: ' + e.message + '</div>';
+    // Hata mesajına "Anahtarı Sıfırla" butonu da ekleyelim ki kullanıcı yanlış girerse düzeltebilsin
+    document.getElementById('aiResult').innerHTML = '<div class="alert al-d mt8" style="flex-direction:column"><span>❌ AI hatası: ' + e.message + '</span><button class="btn bd btn-sm mt8" onclick="localStorage.removeItem(\'gemini_api_key\'); notify(\'API Anahtarı silindi. Tekrar deneyin.\', \'ok\');">🔑 Anahtarı Sıfırla / Değiştir</button></div>';
+    console.error("Detaylı Hata:", e);
   }
 }
 
